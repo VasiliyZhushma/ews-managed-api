@@ -189,6 +189,31 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
+        /// Finds folders.
+        /// </summary>
+        /// <param name="parentFolderIds">The parent folder ids.</param>
+        /// <param name="searchFilter">The search filter. Available search filter classes
+        /// include SearchFilter.IsEqualTo, SearchFilter.ContainsSubstring and
+        /// SearchFilter.SearchFilterCollection</param>
+        /// <param name="view">The view controlling the number of folders returned.</param>
+        /// <param name="errorHandlingMode">Indicates the type of error handling should be done.</param>
+        /// <returns>Collection of service responses.</returns>
+        private async System.Threading.Tasks.Task<ServiceResponseCollection<FindFolderResponse>> InternalFindFoldersAsync(
+            IEnumerable<FolderId> parentFolderIds,
+            SearchFilter searchFilter,
+            FolderView view,
+            ServiceErrorHandling errorHandlingMode)
+        {
+            FindFolderRequest request = new FindFolderRequest(this, errorHandlingMode);
+
+            request.ParentFolderIds.AddRange(parentFolderIds);
+            request.SearchFilter = searchFilter;
+            request.View = view;
+
+            return await request.ExecuteAsync();
+        }
+
+        /// <summary>
         /// Obtains a list of folders by searching the sub-folders of the specified folder.
         /// </summary>
         /// <param name="parentFolderId">The Id of the folder in which to search for folders.</param>
@@ -204,6 +229,30 @@ namespace Microsoft.Exchange.WebServices.Data
             EwsUtilities.ValidateParamAllowNull(searchFilter, "searchFilter");
 
             ServiceResponseCollection<FindFolderResponse> responses = this.InternalFindFolders(
+                new FolderId[] { parentFolderId },
+                searchFilter,
+                view,
+                ServiceErrorHandling.ThrowOnError);
+
+            return responses[0].Results;
+        }
+
+        /// <summary>
+        /// Obtains a list of folders by searching the sub-folders of the specified folder.
+        /// </summary>
+        /// <param name="parentFolderId">The Id of the folder in which to search for folders.</param>
+        /// <param name="searchFilter">The search filter. Available search filter classes
+        /// include SearchFilter.IsEqualTo, SearchFilter.ContainsSubstring and
+        /// SearchFilter.SearchFilterCollection</param>
+        /// <param name="view">The view controlling the number of folders returned.</param>
+        /// <returns>An object representing the results of the search operation.</returns>
+        public async System.Threading.Tasks.Task<FindFoldersResults> FindFoldersAsync(FolderId parentFolderId, SearchFilter searchFilter, FolderView view)
+        {
+            EwsUtilities.ValidateParam(parentFolderId, "parentFolderId");
+            EwsUtilities.ValidateParam(view, "view");
+            EwsUtilities.ValidateParamAllowNull(searchFilter, "searchFilter");
+
+            ServiceResponseCollection<FindFolderResponse> responses = await this.InternalFindFoldersAsync(
                 new FolderId[] { parentFolderId },
                 searchFilter,
                 view,
@@ -235,9 +284,29 @@ namespace Microsoft.Exchange.WebServices.Data
         /// <summary>
         /// Obtains a list of folders by searching the sub-folders of the specified folder.
         /// </summary>
+        /// <param name="parentFolderId">The Id of the folder in which to search for folders.</param>
+        /// <param name="view">The view controlling the number of folders returned.</param>
+        /// <returns>An object representing the results of the search operation.</returns>
+        public async System.Threading.Tasks.Task<FindFoldersResults> FindFoldersAsync(FolderId parentFolderId, FolderView view)
+        {
+            EwsUtilities.ValidateParam(parentFolderId, "parentFolderId");
+            EwsUtilities.ValidateParam(view, "view");
+
+            ServiceResponseCollection<FindFolderResponse> responses = await this.InternalFindFoldersAsync(
+                new FolderId[] { parentFolderId },
+                null, /* searchFilter */
+                view,
+                ServiceErrorHandling.ThrowOnError);
+
+            return responses[0].Results;
+        }
+
+        /// <summary>
+        /// Obtains a list of folders by searching the sub-folders of the specified folder.
+        /// </summary>
         /// <param name="parentFolderName">The name of the folder in which to search for folders.</param>
         /// <param name="searchFilter">The search filter. Available search filter classes
-        /// include SearchFilter.IsEqualTo, SearchFilter.ContainsSubstring and 
+        /// include SearchFilter.IsEqualTo, SearchFilter.ContainsSubstring and
         /// SearchFilter.SearchFilterCollection</param>
         /// <param name="view">The view controlling the number of folders returned.</param>
         /// <returns>An object representing the results of the search operation.</returns>
@@ -250,11 +319,36 @@ namespace Microsoft.Exchange.WebServices.Data
         /// Obtains a list of folders by searching the sub-folders of the specified folder.
         /// </summary>
         /// <param name="parentFolderName">The name of the folder in which to search for folders.</param>
+        /// <param name="searchFilter">The search filter. Available search filter classes
+        /// include SearchFilter.IsEqualTo, SearchFilter.ContainsSubstring and
+        /// SearchFilter.SearchFilterCollection</param>
+        /// <param name="view">The view controlling the number of folders returned.</param>
+        /// <returns>An object representing the results of the search operation.</returns>
+        public async System.Threading.Tasks.Task<FindFoldersResults> FindFoldersAsync(WellKnownFolderName parentFolderName, SearchFilter searchFilter, FolderView view)
+        {
+            return await this.FindFoldersAsync(new FolderId(parentFolderName), searchFilter, view);
+        }
+
+        /// <summary>
+        /// Obtains a list of folders by searching the sub-folders of the specified folder.
+        /// </summary>
+        /// <param name="parentFolderName">The name of the folder in which to search for folders.</param>
         /// <param name="view">The view controlling the number of folders returned.</param>
         /// <returns>An object representing the results of the search operation.</returns>
         public FindFoldersResults FindFolders(WellKnownFolderName parentFolderName, FolderView view)
         {
             return this.FindFolders(new FolderId(parentFolderName), view);
+        }
+
+        /// <summary>
+        /// Obtains a list of folders by searching the sub-folders of the specified folder.
+        /// </summary>
+        /// <param name="parentFolderName">The name of the folder in which to search for folders.</param>
+        /// <param name="view">The view controlling the number of folders returned.</param>
+        /// <returns>An object representing the results of the search operation.</returns>
+        public async System.Threading.Tasks.Task<FindFoldersResults> FindFoldersAsync(WellKnownFolderName parentFolderName, FolderView view)
+        {
+            return await this.FindFoldersAsync(new FolderId(parentFolderName), view);
         }
 
         /// <summary>
