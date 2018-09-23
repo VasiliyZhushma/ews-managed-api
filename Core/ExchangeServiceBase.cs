@@ -547,6 +547,7 @@ namespace Microsoft.Exchange.WebServices.Data
             this.timeZone = service.timeZone;
             this.httpHeaders = service.httpHeaders;
             this.ewsHttpWebRequestFactory = service.ewsHttpWebRequestFactory;
+            this.webProxy = service.webProxy;
         }
 
         /// <summary>
